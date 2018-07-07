@@ -1,0 +1,31 @@
+{
+    "globalEnv": [
+        {
+            "currentConfig": ".kube/config",
+            "contexts": {
+                ".kube/config": {
+                    "currentContext": "os1pi020",
+                    "namespaces": {
+                        "os1pi020": {
+                            "currentNamespace": "default"
+                        },
+                        "os1pi014": {
+                            "currentNamespace": "kube-system"
+                        }
+                    }
+                },
+                ".kube/config_minikube": {
+                    "currentContext": "kubernetes",
+                    "namespaces": {
+                        "kubernetes": {
+                            "currentNamespace": "istio-system"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "envs": {
+        "NgZo5kPtIn": "os1pi001-cluster-admin"
+    }
+}
