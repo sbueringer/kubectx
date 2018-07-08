@@ -49,3 +49,17 @@ Flags:
 
 Use "kubectx [command] --help" for more information about a command.
 ````
+
+# Example usage with kubectl
+
+Sourced e.g. via `.zshrc`:
+````
+function k(){
+    CONFIG=${KUBECONFIG:-"$(kcfg)"}
+    CONTEXT=${KUBECONTEXT:-"$(kctx)"}
+    NAMESPACE=${KUBENAMESPACE:-"$(kns)"}
+    kubectl --kubeconfig $CONFIG --context $CONTEXT --namespace $NAMESPACE "$@"
+}
+complete -o default -F __start_kubectl k
+````
+This can also be used in your favorite prompt theme, e.g. see [prompt_sbueringer_setup](https://github.com/sbueringer/prezto/blob/master/modules/prompt/functions/prompt_sbueringer_setup#L99-L104)
