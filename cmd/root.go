@@ -55,19 +55,6 @@ var rootCmd = &cobra.Command{
 	Long:  `kubectx manages kubectl context incl. kubeconfig, context and namespace`,
 	ValidArgs: []string{"config", "context", "namespace"} ,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		binName := os.Args[0]
-	
-		if binName == "kcfg" {
-			configCmd.Run(cmd, args)
-			return
-		} else if binName == "kctx" {
-			contextCmd.Run(cmd, args)
-			return
-		} else if binName == "kns" {
-			namespaceCmd.Run(cmd, args)
-			return
-		} 
 		cmd.Help()
 	},
 }

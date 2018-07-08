@@ -11,15 +11,12 @@ export TERMINAL_ID=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -
 
 ## Binary
 
-Go to the [releases](https://github.com/sbueringer/kubectx/releases) page and download the Linux or Windows version. Put the binary to somewhere you want (on UNIX-ish systems, /usr/local/bin or the like). Make sure it has execution bit set. If you want, you can add symlinks to `kcfg`, `kctx` and kns, e.g.:
+Go to the [releases](https://github.com/sbueringer/kubectx/releases) page and download the Linux or Windows version. Put the binary to somewhere you want (on UNIX-ish systems, /usr/local/bin or the like). Make sure it has execution bit set. If you want, you can shortcuts to `kcfg`, `kctx` and `kns`, e.g.:
 
 ````
-# kcfg = kubectx confg
-ln -s /usr/local/bin/kubectx /usr/local/bin/kcfg
-# kctx = kubectx context
-ln -s /usr/local/bin/kubectx /usr/local/bin/kctx
-# kns = kubectx namespace
-ln -s /usr/local/bin/kubectx /usr/local/bin/kns
+function kcfg() { kubectx config    "$@" }
+function kctx() { kubectx context   "$@" }
+function kns()  { kubectx namespace "$@" }
 ````
 ## Auto completion
 
