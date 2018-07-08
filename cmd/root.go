@@ -51,64 +51,24 @@ var kubeContext KubeContext
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "kubectx",
-	Short: "",
-	Long:  ``,
+	Short: "kubectx manages kubectl context incl. kubeconfig, context and namespace",
+	Long:  `kubectx manages kubectl context incl. kubeconfig, context and namespace`,
+	ValidArgs: []string{"config", "context", "namespace"} ,
 	Run: func(cmd *cobra.Command, args []string) {
-		loadKubeContext()
 
 		binName := os.Args[0]
-
-		var cmdName string
-		var value string
+	
 		if binName == "kcfg" {
-			cmdName = "config"
-			if len(args) == 1 {
-				value = args[0]
-			}
-		} else if binName == "kctx" {
-			cmdName = "context"
-			if len(args) == 1 {
-				value = args[0]
-			}
-		} else if binName == "kns" {
-			cmdName = "namespace"
-			if len(args) == 1 {
-				value = args[0]
-			}
-		} else {
-			if len(args) == 1 {
-				cmdName = args[0]
-			}
-			if len(args) == 2 {
-				value = args[1]
-			}
-		}
-		
-		if cmdName == "" {
-			fmt.Print("TODO print usage")
+			configCmd.Run(cmd, args)
 			return
-		}		
-
-		if cmdName != "" && value == "" {
-			if cmdName == "config" {
-				fmt.Println(getCurrentConfig())
-			} else if cmdName == "context" {
-				fmt.Println(getCurrentContext())
-			} else if cmdName == "namespace" {
-				fmt.Println(getCurrentNamespace())
-			}
-		} else if cmdName != "" && value != "" {
-			if cmdName == "config" {
-				setCurrentConfig(value)
-				saveKubeContext()
-			} else if cmdName == "context" {
-				setCurrentContext(value)
-				saveKubeContext()
-			} else if cmdName == "namespace" {
-				setCurrentNamespace(value)
-				saveKubeContext()
-			}
-		}
+		} else if binName == "kctx" {
+			contextCmd.Run(cmd, args)
+			return
+		} else if binName == "kns" {
+			namespaceCmd.Run(cmd, args)
+			return
+		} 
+		cmd.Help()
 	},
 }
 
@@ -144,12 +104,19 @@ func setCurrentNamespace(namespace string) {
 	currentConfigName := getCurrentConfig()
 	currentContextName := getCurrentContext()
 
+	if kubeContext.GlobalEnv.Contexts == nil {
+		kubeContext.GlobalEnv.Contexts = make(map[string]Context)
+	}
+
+
 	configContext, ok := kubeContext.GlobalEnv.Contexts[currentConfigName]
 	if !ok {
 		configContext = Context{
 			Namespaces: make(map[string]string),
 		}
 	}
+	configContext.CurrentContext = currentContextName
+
 	if configContext.Namespaces == nil {
 		configContext.Namespaces = make(map[string]string)
 	}
