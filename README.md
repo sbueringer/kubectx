@@ -55,11 +55,12 @@ Use "kubectx [command] --help" for more information about a command.
 Sourced e.g. via `.zshrc`:
 ````
 function k(){
-    CONFIG=${KUBECONFIG:-"$(kcfg)"}
-    CONTEXT=${KUBECONTEXT:-"$(kctx)"}
-    NAMESPACE=${KUBENAMESPACE:-"$(kns)"}
-    kubectl --kubeconfig $CONFIG --context $CONTEXT --namespace $NAMESPACE "$@"
+    ~/bin/kubectl --kubeconfig $(kcfg) --context $(kctx) --namespace $(kns) "$@"
 }
-complete -o default -F __start_kubectl k
+alias kubectl='k '
+
+if command -v kubectl > /dev/null 2>&1; then
+  source <(kubectl completion zsh) 
+fi
 ````
 This can also be used in your favorite prompt theme, e.g. see [prompt_sbueringer_setup](https://github.com/sbueringer/prezto/blob/master/modules/prompt/functions/prompt_sbueringer_setup#L99-L104)
