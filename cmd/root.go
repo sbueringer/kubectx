@@ -15,13 +15,13 @@
 package cmd
 
 import (
-	"time"
-	"strings"
-	"regexp"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +34,7 @@ type KubeContext struct {
 
 // Environment comment
 type Environment struct {
-	UpdatedOn	  time.Time
+	UpdatedOn     time.Time
 	CurrentConfig string             `json:"currentConfig"`
 	Contexts      map[string]Context `json:"contexts"`
 }
@@ -50,10 +50,10 @@ var kubeContext KubeContext
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "kubectx",
-	Short: "kubectx manages kubectl context incl. kubeconfig, context and namespace",
-	Long:  `kubectx manages kubectl context incl. kubeconfig, context and namespace`,
-	ValidArgs: []string{"config", "context", "namespace"} ,
+	Use:       "kubectx",
+	Short:     "kubectx manages kubectl context incl. kubeconfig, context and namespace",
+	Long:      `kubectx manages kubectl context incl. kubeconfig, context and namespace`,
+	ValidArgs: []string{"config", "context", "namespace"},
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -94,7 +94,6 @@ func setCurrentNamespace(namespace string) {
 	if kubeContext.GlobalEnv.Contexts == nil {
 		kubeContext.GlobalEnv.Contexts = make(map[string]Context)
 	}
-
 
 	configContext, ok := kubeContext.GlobalEnv.Contexts[currentConfigName]
 	if !ok {
@@ -160,7 +159,9 @@ func getCurrentContext() string {
 func getDefaultContext() string {
 	currentConfig := getCurrentConfig()
 	file, err := ioutil.ReadFile(currentConfig)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 
 	currentContext := regexp.MustCompile(`current-context: .*`)
 	match := currentContext.Find(file)
@@ -204,6 +205,10 @@ func setCurrentContext(context string) {
 		}
 		configContext.CurrentContext = context
 
+		if _, ok := configContext.Namespaces[context]; !ok {
+			configContext.Namespaces[context] = "default"
+		}
+
 		env.Contexts[currentConfigName] = configContext
 		env.UpdatedOn = time.Now()
 		kubeContext.Envs[terminalID] = env
@@ -221,6 +226,37 @@ func setCurrentConfig(config string) {
 		}
 		env.CurrentConfig = config
 		env.UpdatedOn = time.Now()
+
+		if env.Contexts == nil {
+			env.Contexts = make(map[string]Context)
+		}
+
+		// save env so that we ware able to get the defaultcontext from
+		// the newly set CurrentConfig
+		kubeContext.Envs[terminalID] = env
+
+		if len(env.Contexts) == 0 {
+			defaultContext := getDefaultContext()
+			env.Contexts[env.CurrentConfig] = Context{
+				CurrentContext: defaultContext,
+			}
+		}
+		if _, ok := env.Contexts[env.CurrentConfig]; !ok {
+			defaultContext := getDefaultContext()
+			env.Contexts[env.CurrentConfig] = Context{
+				CurrentContext: defaultContext,
+			}
+		}
+
+		configContext := env.Contexts[env.CurrentConfig]
+		if configContext.Namespaces == nil {
+			configContext.Namespaces = make(map[string]string)
+		}
+		if _, ok := configContext.Namespaces[configContext.CurrentContext]; !ok {
+			configContext.Namespaces[configContext.CurrentContext] = "default"
+		}
+		env.Contexts[env.CurrentConfig] = configContext
+
 		kubeContext.Envs[terminalID] = env
 	}
 }
@@ -261,7 +297,7 @@ func saveKubeContext() {
 
 	yesterday := time.Now().Add(-24 * time.Hour)
 	for envName, env := range kubeContext.Envs {
-		if (env.UpdatedOn.Before(yesterday)){
+		if env.UpdatedOn.Before(yesterday) {
 			delete(kubeContext.Envs, envName)
 		}
 	}
