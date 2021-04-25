@@ -89,7 +89,7 @@ func getCurrentNamespace() string {
 
 func setCurrentNamespace(namespace string) {
 	currentConfigName := getCurrentConfig()
-	currentContextName := getCurrentContext()
+	currentContextName, _ := getCurrentContext()
 
 	if kubeContext.GlobalEnv.Contexts == nil {
 		kubeContext.GlobalEnv.Contexts = make(map[string]Context)
@@ -139,24 +139,24 @@ func setCurrentNamespace(namespace string) {
 	}
 }
 
-func getCurrentContext() string {
+func getCurrentContext() (string, error) {
 	var currentContext string
 	if terminalID := os.Getenv("TERMINAL_ID"); terminalID != "" {
 		currentConfig := kubeContext.Envs[terminalID].CurrentConfig
 		currentContext = kubeContext.Envs[terminalID].Contexts[currentConfig].CurrentContext
 	}
 	if currentContext != "" {
-		return currentContext
+		return currentContext, nil
 	}
 	currentConfig := kubeContext.GlobalEnv.CurrentConfig
 	currentContext = kubeContext.GlobalEnv.Contexts[currentConfig].CurrentContext
 	if currentContext != "" {
-		return currentContext
+		return currentContext, nil
 	}
 	return getDefaultContext()
 }
 
-func getDefaultContext() string {
+func getDefaultContext() (string, error) {
 	currentConfig := getCurrentConfig()
 	file, err := ioutil.ReadFile(currentConfig)
 	if err != nil {
@@ -166,7 +166,10 @@ func getDefaultContext() string {
 	currentContext := regexp.MustCompile(`current-context: .*`)
 	match := currentContext.Find(file)
 
-	return strings.Split(string(match), ": ")[1]
+	if match == nil {
+		return "", fmt.Errorf("error: current-context is not set")
+	}
+	return strings.Split(string(match), ": ")[1], nil
 }
 
 func setCurrentContext(context string) {
@@ -236,13 +239,13 @@ func setCurrentConfig(config string) {
 		kubeContext.Envs[terminalID] = env
 
 		if len(env.Contexts) == 0 {
-			defaultContext := getDefaultContext()
+			defaultContext, _ := getDefaultContext()
 			env.Contexts[env.CurrentConfig] = Context{
 				CurrentContext: defaultContext,
 			}
 		}
 		if _, ok := env.Contexts[env.CurrentConfig]; !ok {
-			defaultContext := getDefaultContext()
+			defaultContext, _ := getDefaultContext()
 			env.Contexts[env.CurrentConfig] = Context{
 				CurrentContext: defaultContext,
 			}

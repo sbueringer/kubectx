@@ -38,7 +38,12 @@ Examples:
 
 		switch len(args) {
 		case 0:
-			fmt.Println(getCurrentContext())
+			context, err := getCurrentContext()
+			if err != nil {
+				fmt.Println(err.Error())
+			} else {
+				fmt.Println(context)
+			}
 		case 1:
 			setCurrentContext(args[0])
 			saveKubeContext()
